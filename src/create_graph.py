@@ -1,32 +1,35 @@
 import networkx as nx
 import csv
-import copy
 
 # main file for my goodreads network
 
 
-def data_report(csv_read):
+def csv_data_report(csv_read):
     print("length of csv file", len(list(csv_read)))
 
 
-def open_data(filename):
+def open_csv_data(filename):
     with open(filename, newline='') as csv_file:
         csv_read = csv.reader(csv_file, delimiter=',', quotechar='"')
 
-        for row in csv_read:
-            print(row)
+        # for row in csv_read:
+        #     print(row)
 
 
         csv_file.seek(0)
         reader = csv.reader(csv_file)
 
-        data_report(csv_read)
+        csv_data_report(csv_read)
 
 
-                                
-    
+# TODO: logic to add edges and nodes and determining what the graph will look like
+def create_graph():
+    G = nx.Graph()
+                            
 
-open_data('../data/goodreads_books_dataset.csv')
+
+create_graph()
+open_csv_data('../data/goodreads_books_dataset.csv')
     
 
 
