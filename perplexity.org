@@ -1,0 +1,20 @@
+A genre or shelf-based network for your Goodreads CSV would connect books sharing implied categories, revealing clusters of similar tastes even without explicit genre columns. This shifts focus from authorship/series to thematic similarity, highlighting "if you like this high-rated book, try these nearby ones."
+
+## Network Structure Options
+- **Book-Book Similarity Graph**: Nodes are books (via book_id); edges link books with matching rating_category, rating_tier, or estimated_popularity values—treating these as "genre proxies" since true shelves aren't in your data. Weight edges by title_length similarity or shared has_series_info to mimic shelf co-occurrence.
+- **Multi-Attribute Clusters**: Use title_complexity, word_count, and is_high_rated as node features; connect books within similar ranges (e.g., high word_count + high-rated forms a "epic fantasy shelf" cluster). This approximates Goodreads shelves like "favorites" or "dense-reads."
+- **Bipartite Genre-Book**: Create synthetic "genre" nodes from combinations like "high-rated-series" (is_high_rated=True + has_series_info=True) or "popular-standalone" (high estimated_popularity + title_type=standalone); link books to these for shelf-like groupings. [nycdatascience](https://nycdatascience.com/blog/student-works/goodreads-extravaganza-an-analysis-of-trends-in-reader-behavior/)
+p
+Book-Book with rating proxies works best, as your columns emphasize popularity and quality tiers over raw metadata.
+
+## Connection Strategies
+- **Direct Matches**: Edge if rating_category matches exactly (e.g., "high" books form a tight premium cluster) or percentile_rank differs by <10%—captures "same shelf" vibes without external data.
+- **Threshold Similarity**: Connect books where title_complexity and author_count align (e.g., simple titles by solo authors = "light reads shelf"), using cosine similarity on binned numeric vars like word_count.
+- **Series-Augmented**: Boost edges between same-series books (matching series_number logic) that also share rating_tier, simulating "series-fantasy" shelves.
+
+Prioritize high percentile_rank books first to focus on influential "shelf leaders."
+
+## Analysis Potential
+Degree centrality would spotlight genre hubs (e.g., most connected high-rated books). Communities via Louvain modularity could auto-discover shelf-like groups, like clustering around estimated_popularity levels. Filter by has_subtitle=True for niche "complex genre" subnetworks.
+
+This builds naturally on your author-series base, evolving it into recommendation-friendly shelves without new data.

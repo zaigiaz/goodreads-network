@@ -1,0 +1,3 @@
+* Overview Ideas
+- https://github.com/zygmuntz/goodbooks-10k
+  I could link books with similar tags or shelfs and see if they're is anything there

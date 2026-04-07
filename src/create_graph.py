@@ -15,7 +15,6 @@ def open_csv_data(filename):
         # for row in csv_read:
         #     print(row)
 
-
         csv_file.seek(0)
         reader = csv.reader(csv_file)
 
