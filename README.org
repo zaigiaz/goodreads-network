@@ -11,3 +11,8 @@ Slides were created with Latex-Beamer.
 - Gephi Graph for visualization
 - Comparison between a Random Network and Normal Clustered Network
 - Final Interpretation of Results
+
+** Datasets
+
+- https://www.kaggle.com/datasets/ishikajohari/best-books-10k-multi-genre-data
+- https://www.kaggle.com/datasets/mdhamani/goodreads-books-100k
