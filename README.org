@@ -1,0 +1,5 @@
+* Overview
+
+Curated Network of Goodreads Titles that are clustered according to a different metric than
+how Goodreads decides to choose what is in a Book Genre or not. Data from Google and Kaggle.
+Slides created with Latex Beamer.
