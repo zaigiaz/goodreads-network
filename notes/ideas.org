@@ -1,0 +1,26 @@
+* Overview Ideas
+- https://github.com/zygmuntz/goodbooks-10k
+  I could link books with similar tags or shelfs and see if they're is anything there
+
+- https://sites.google.com/eng.ucsd.edu/ucsdbookgraph/home/
+
+Maybe I could use this to also get more stuff on shelf recommendations, have more more fine-grained data with this.
+
+
+* My new Idea
+
+Perplexity returned that A multi-target cluster where we find the thematic similarity of books using
+similar similar ratings
+
+Nodes would be books.
+
+edges between books would be a multi-target variable composed of a bunch of different
+metrics. If Books are [-1, 1] near eachother then we put ann edge between them?
+
+That is the best we can do?
+
+Compare the two networks, the original clustered genres and then my target that tries to cluster the nodes together based on some metric
+
+
+
+
