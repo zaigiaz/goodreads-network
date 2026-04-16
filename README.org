@@ -16,3 +16,21 @@ Slides were created with Latex-Beamer.
 
 - https://www.kaggle.com/datasets/ishikajohari/best-books-10k-multi-genre-data
 - https://www.kaggle.com/datasets/mdhamani/goodreads-books-100k
+
+** Usage
+
+#+begin_src bash
+cd src
+
+# Create graph (saves to ../data/goodreads_network.gml)
+python graph_builder.py
+
+# With clustering coefficient (slow)
+python graph_builder.py --clustering
+
+# Load existing GML and compute stats + clustering
+python graph_builder.py --from-gml
+
+# Test different thresholds
+python graph_builder.py --test-thresholds
+#+end_src

@@ -1,0 +1,69 @@
+-*- mode: compilation; default-directory: "~/Programming/goodreads-network/src/" -*-
+Compilation started at Thu Apr 16 16:53:31
+
+python3 graph_builder.py
+Loading data...
+Loaded 10000 books. Time: 0.35s
+
+=== Building Graph ===
+
+[1/7] Building genre matrix...
+  [1/3] Collecting all genres...
+  [2/3] Building matrix (10000 books x 617 genres)...
+    Progress: 2000/10000 books
+    Progress: 4000/10000 books
+    Progress: 6000/10000 books
+    Progress: 8000/10000 books
+  [3/3] Done. Time: 0.02s
+  Matrix shape: (10000, 617), 617 unique genres
+
+[2/7] Computing genre similarity...
+  Computing genre similarity (matrix multiply)...
+    Matrix size: 10000x10000
+    Intersection done
+  Genre similarity done. Time: 1.00s
+
+[3/7] Computing rating similarity...
+  Computing rating similarity...
+  Rating similarity done. Time: 0.27s
+
+[4/7] Combining similarities...
+  Combining similarities...
+  Combined done. Time: 0.23s
+
+[5/7] Building adjacency matrix...
+  Building adjacency (threshold=0.3)...
+  Adjacency done. 13126670 edges. Time: 0.21s
+
+[6/7] Converting to NetworkX...
+  Converting to NetworkX...
+    Creating graph from numpy array...
+    Graph created. Time: 54.12s
+    Adding edge weights...
+    Added 13126670 weights. Time: 24.96s
+    Relabeling nodes...
+    Relabeled. Time: 27.26s
+    Setting node attributes...
+    Attributes set. Time: 0.01s
+  NetworkX conversion done. Total: 106.35s
+
+[7/7] Saving GML...
+  Saved to ../data/goodreads_network.gml
+
+Graph complete. Total build time: 158.71s
+  Computing graph stats...
+    Nodes: 10000, Edges: 13126670, Density: 0.2626
+    Avg degree: 2625.33
+    Skipping clustering (use --clustering to enable)
+  Stats done. Time: 0.02s
+  Generating Erdős–Rényi graphs...
+    (skipped - use --clustering to enable)
+
+=== Our Graph (threshold=0.3) ===
+Nodes: 10000, Edges: 13126670
+Density: 0.2626, Avg Degree: 2625.33
+
+=== Erdős–Rényi (same n,m) ===
+Avg Clustering: 0.0000
+
+Compilation finished at Thu Apr 16 16:56:25
