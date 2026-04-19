@@ -33,4 +33,28 @@ python graph_builder.py --from-gml
 
 # Test different thresholds
 python graph_builder.py --test-thresholds
+
+# Generate ER network (same n,m as Goodreads network)
+python graph_builder.py --generate-er
+
+# Degree distribution analysis (saves to img/)
+python data_analysis.py
+
+# Compare degree distribution with ER network
+python data_analysis.py --compare-er
+
+# Analyze Goodreads network (file 1)
+python data_analysis.py --file 1
+
+# Analyze ER network (file 2)
+python data_analysis.py --file 2
+
+# Detect communities and compute modularity
+python data_analysis.py --communities
+
+# Compute assortativity
+python data_analysis.py --assortativity
+
+# Full analysis (clustering + communities + assortativity)
+python data_analysis.py --clustering --communities --assortativity
 #+end_src

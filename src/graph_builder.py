@@ -7,9 +7,14 @@ from similarity import (
     build_genre_matrix,
     compute_genre_similarity,
     compute_rating_similarity,
+    compute_num_ratings_similarity,
     compute_combined_similarity,
     build_adjacency_matrix,
 )
+
+from data_analysis import get_graph_stats
+
+DATA_DIR = '../data'
 
 
 def numpy_to_networkx(adj_matrix, book_ids, books, similarity_matrix=None):
@@ -58,40 +63,6 @@ def numpy_to_networkx(adj_matrix, book_ids, books, similarity_matrix=None):
     return G
 
 
-def get_graph_stats(G, compute_clustering=False):
-    print("  Computing graph stats...")
-    t0 = time.time()
-    
-    stats = {
-        'nodes': G.number_of_nodes(),
-        'edges': G.number_of_edges(),
-        'density': nx.density(G),
-    }
-    print(f"    Nodes: {stats['nodes']}, Edges: {stats['edges']}, Density: {stats['density']:.4f}")
-    
-    if G.number_of_nodes() > 0:
-        degrees = [d for n, d in G.degree()]
-        stats['avg_degree'] = sum(degrees) / len(degrees)
-        stats['max_degree'] = max(degrees)
-        stats['min_degree'] = min(degrees)
-        print(f"    Avg degree: {stats['avg_degree']:.2f}")
-    
-    if compute_clustering and G.number_of_nodes() > 1 and G.number_of_edges() > 0:
-        print("    Computing clustering coefficient (slow)...")
-        try:
-            stats['avg_clustering'] = nx.average_clustering(G)
-            print(f"    Clustering: {stats['avg_clustering']:.4f}")
-        except Exception as e:
-            stats['avg_clustering'] = 0
-            print(f"    Clustering failed: {e}")
-    else:
-        stats['avg_clustering'] = None
-        print("    Skipping clustering (use --clustering to enable)")
-    
-    print(f"  Stats done. Time: {time.time() - t0:.2f}s")
-    return stats
-
-
 def compare_erdos_renyi(G, n_samples=5, compute_clustering=False):
     n = G.number_of_nodes()
     m = G.number_of_edges()
@@ -133,39 +104,58 @@ def compare_erdos_renyi(G, n_samples=5, compute_clustering=False):
     }
 
 
-def build_graph_fast(books, similarity_threshold=0.7, weights=(0.7, 0.3)):
+def build_graph_fast(books, similarity_threshold=0.7, weights=(0.6, 0.2, 0.2)):
     """Build graph using numpy for speed."""
     print("\n=== Building Graph ===")
     
     t_total = time.time()
     
-    print("\n[1/7] Building genre matrix...")
+    print("\n[1/8] Building genre matrix...")
     genre_matrix, genre_list, book_ids = build_genre_matrix(books)
     print(f"  Matrix shape: {genre_matrix.shape}, {len(genre_list)} unique genres")
     
-    print("\n[2/7] Computing genre similarity...")
+    print("\n[2/8] Computing genre similarity...")
     genre_sim = compute_genre_similarity(genre_matrix)
     
-    print("\n[3/7] Computing rating similarity...")
+    print("\n[3/8] Computing num_ratings similarity...")
+    num_ratings = np.array([books[bid].get('num_ratings', 0) for bid in book_ids], dtype=np.float32)
+    num_ratings_sim = compute_num_ratings_similarity(num_ratings)
+    
+    print("\n[4/8] Computing rating similarity...")
     ratings = np.array([books[bid].get('avg_rating', 0) for bid in book_ids], dtype=np.float32)
     rating_sim = compute_rating_similarity(ratings)
     
-    print("\n[4/7] Combining similarities...")
-    combined_sim = compute_combined_similarity(genre_sim, rating_sim, weights)
+    print("\n[5/8] Combining similarities...")
+    combined_sim = compute_combined_similarity(genre_sim, num_ratings_sim, rating_sim, weights)
     
-    print("\n[5/7] Building adjacency matrix...")
+    print("\n[6/8] Building adjacency matrix...")
     adj_matrix = build_adjacency_matrix(combined_sim, similarity_threshold)
     
-    print("\n[6/7] Converting to NetworkX...")
+    print("\n[7/8] Converting to NetworkX...")
     G = numpy_to_networkx(adj_matrix, book_ids, books, combined_sim)
     
-    print("\n[7/7] Saving GML...")
-    nx.write_gml(G, '../data/goodreads_network.gml')
-    print("  Saved to ../data/goodreads_network.gml")
+    print("\n[8/8] Saving GML...")
+    nx.write_gml(G, f'{DATA_DIR}/goodreads_network.gml')
+    print(f"  Saved to {DATA_DIR}/goodreads_network.gml")
     
     print(f"\nGraph complete. Total build time: {time.time() - t_total:.2f}s")
     
     return G
+
+
+def generate_er_network(n, m, save_path=None):
+    print("\n=== Generating ER Network ===")
+    t0 = time.time()
+    
+    ER = nx.gnm_random_graph(n, m)
+    print(f"  Generated ER graph (n={n}, m={m})")
+    
+    if save_path:
+        nx.write_gml(ER, save_path)
+        print(f"  Saved to {save_path}")
+    
+    print(f"  Done. Time: {time.time() - t0:.2f}s")
+    return ER
 
 
 def export_gml(G, filepath):
@@ -195,11 +185,25 @@ def test_thresholds(books, weights, thresholds):
 if __name__ == '__main__':
     import sys
     
-    weights = (0.7, 0.3)
+    weights = (0.6, 0.2, 0.2)
     compute_clustering = '--clustering' in sys.argv
     
-    if len(sys.argv) > 1 and sys.argv[1] == '--from-gml':
-        filepath = sys.argv[2] if len(sys.argv) > 2 else '../data/goodreads_network.gml'
+    if len(sys.argv) > 1 and sys.argv[1] == '--generate-er':
+        n = int(sys.argv[2]) if len(sys.argv) > 2 else None
+        m = int(sys.argv[3]) if len(sys.argv) > 3 else None
+        
+        if n is None or m is None:
+            G = nx.read_gml(f'{DATA_DIR}/goodreads_network.gml')
+            n = G.number_of_nodes()
+            m = G.number_of_edges()
+            print(f"Using n={n}, m={m} from existing graph")
+        
+        save_path = f'{DATA_DIR}/er_network.gml'
+        ER = generate_er_network(n, m, save_path=save_path)
+        print(f"ER network saved to {save_path}")
+    
+    elif len(sys.argv) > 1 and sys.argv[1] == '--from-gml':
+        filepath = sys.argv[2] if len(sys.argv) > 2 else f'{DATA_DIR}/goodreads_network.gml'
         print(f"Loading from {filepath}...")
         G = nx.read_gml(filepath)
         
@@ -214,7 +218,7 @@ if __name__ == '__main__':
     elif len(sys.argv) > 1 and sys.argv[1] == '--test-thresholds':
         print("Loading data...")
         t0 = time.time()
-        books = load_goodreads_data('../data/goodreads_data.csv')
+        books = load_goodreads_data(f'{DATA_DIR}/goodreads_data.csv')
         print(f"Loaded {len(books)} books. Time: {time.time() - t0:.2f}s")
         
         thresholds = [0.5, 0.6, 0.7, 0.8, 0.9]
@@ -228,7 +232,7 @@ if __name__ == '__main__':
     else:
         print("Loading data...")
         t0 = time.time()
-        books = load_goodreads_data('../data/goodreads_data.csv')
+        books = load_goodreads_data(f'{DATA_DIR}/goodreads_data.csv')
         print(f"Loaded {len(books)} books. Time: {time.time() - t0:.2f}s")
         
         G = build_graph_fast(books, similarity_threshold=0.7, weights=weights)

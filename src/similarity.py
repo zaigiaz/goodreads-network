@@ -70,15 +70,36 @@ def compute_rating_similarity(ratings, max_diff=1.0):
     return similarity
 
 
-def compute_combined_similarity(genre_sim, rating_sim, weights):
-    """Combine genre and rating similarity with weights."""
+def compute_num_ratings_similarity(num_ratings, max_diff=None):
+    """Compute popularity similarity based on number of ratings."""
+    print("  Computing num_ratings similarity...")
+    t0 = time.time()
+    
+    log_ratings = np.log1p(num_ratings)
+    
+    if max_diff is None:
+        max_diff = log_ratings.max() - log_ratings.min()
+    
+    diff = np.abs(log_ratings[:, np.newaxis] - log_ratings[np.newaxis, :])
+    similarity = np.maximum(0, 1 - diff / max_diff)
+    
+    np.fill_diagonal(similarity, 0)
+    
+    print(f"  Num ratings similarity done. Time: {time.time() - t0:.2f}s")
+    return similarity
+
+
+def compute_combined_similarity(genre_sim, num_ratings_sim, rating_sim, weights):
+    """Combine genre, num_ratings, and rating similarity with weights."""
     print("  Combining similarities...")
     t0 = time.time()
     
-    genre_weight, rating_weight = weights
-    total_weight = genre_weight + rating_weight
+    genre_weight, num_rating_weight, rating_weight = weights
+    total_weight = genre_weight + num_rating_weight + rating_weight
     
-    combined = (genre_weight * genre_sim + rating_weight * rating_sim) / total_weight
+    combined = (genre_weight * genre_sim + 
+               num_rating_weight * num_ratings_sim + 
+               rating_weight * rating_sim) / total_weight
     
     print(f"  Combined done. Time: {time.time() - t0:.2f}s")
     return combined
